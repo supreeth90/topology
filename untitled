@@ -1,0 +1,89 @@
+def create_nodes(nodes_uri, graph):
+	prefix = """PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+	PREFIX ndl: <http://www.science.uva.nl/research/sne/ndl#> """
+	node_only_query=prefix+"""
+	SELECT ?name 
+	WHERE {
+	        ?x rdf:type ndl:Device . ?x ndl:name ?name.
+		OPTIONAL {
+			?y ndl:connectedTo ?z .
+			?z rdf:type ndl:Interface .
+			?z ndl:name ?neighbour
+		} . OPTIONAL {
+			?y ndl:capacity ?capacity .
+			?y ndl:encapsulation ?type
+		} .
+		
+	}"""
+	
+	nodes = []
+
+	for row in graph.query(node_only_query):
+		node = dict()
+		node["$schema"]="http://unis.incntre.iu.edu/schema/20140214/node#"
+		node["name"]=row.name
+		# ports = []
+		# port={'href':'instageni.illinois.edu_authority_cm_slice_idms','rel': 'full'}
+		# ports.append(port)
+		# node["ports"]=ports
+		print "Node::"
+		print row.name
+		nodes.append(node)
+
+	nodes_json_data = json.dumps(nodes)
+	print("NODE URI::"+nodes_uri)
+	print("NODE JSON DATA:"+nodes_json_data)
+	requests.post(nodes_uri, data = nodes_json_data)
+
+def build_ports(ports_uri, graph, node_to_ref_dict):
+	prefix = """PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+	PREFIX ndl: <http://www.science.uva.nl/research/sne/ndl#> """
+	interface_query=prefix+"""
+	SELECT ?name ?interface
+		WHERE {
+		        ?x rdf:type ndl:Device . ?x ndl:name ?name .
+			?x ndl:hasInterface ?interface 
+			OPTIONAL {
+				?y ndl:connectedTo ?z .
+				?z rdf:type ndl:Interface .
+				?z ndl:name ?neighbour
+			} . OPTIONAL {
+				?y ndl:capacity ?capacity .
+				?y ndl:encapsulation ?type
+			} .
+			
+		}"""
+
+	ports = []
+	print("PORTSSSSS!!!!")
+	node_to_port_ref_dict =  dict()
+	for row in g.query(interface_query):
+		print(row.name+" :::"+row.interface)
+		temp_intf_name=row.interface
+		intf_name=temp_intf_name.split("#")
+		port_name_split=intf_name[1].split(":")
+		port_node_name=port_name_split[0]
+		port_name=port_name_split[1]
+		print("PPP>>"+node_to_ref_dict[port_node_name]+">>"+port_name)
+		port = dict()
+		port["$schema"]="http://unis.incntre.iu.edu/schema/20140214/port#"
+		port["name"]=port_name
+		port["nodeRef"]=node_to_ref_dict[port_node_name]
+		ipv4_addr = dict()
+		ipv4_addr["type"]="ipv4"
+		## TODO: Fill the actual IPv4 address or IP prefix when decided
+		ipv4_addr["address"]="1.1.1.1"
+		port["properties"]={"ipv4":ipv4_addr}
+
+		node_ref_to_port_ref_dict[]
+		ports.append(port)
+
+	print "::FINAL PORTS JSON::"
+	ports_json_data = json.dumps(ports)
+	print(ports_json_data)
+	print("PORTS URI::"+ports_uri)
+	requests.post(ports_uri, data = ports_json_data)
+
+def add_port_ref_to_nodes(nodes_uri, graph, node_to_ref_dict):
