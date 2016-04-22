@@ -326,6 +326,7 @@ class Topology:
 			ipv4_addr["address"]="1.1.1.1"
 			port["properties"]={"ipv4":ipv4_addr}
 
+			if self.node_to_port_dict[]
 			if node_to_port_ref_dict[port_node_name] is not None:
 				current_port_ref_list=node_to_port_ref_dict[port_node_name]
 				current_port_ref_list.append()
@@ -336,6 +337,7 @@ class Topology:
 		print(ports_json_data)
 		print("PORTS URI::"+ports_uri)
 		requests.post(ports_uri, data = ports_json_data)
+
 
 
 
